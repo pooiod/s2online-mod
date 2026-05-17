@@ -226,11 +226,11 @@ public class Scratch extends Sprite {
 
 	protected function handleStartupParameters():void {
 		setupExternalInterface(false);
-		externalCall('JSwillDownload', function (will:Boolean):void {
-			if (!will) {
-				dlFrom2();
-			}
-		});
+		//externalCall('JSwillDownload', function (will:Boolean):void {
+		//	if (!will) {
+		//		dlFrom2();
+		//	}
+		//});
 		jsEditorReady();
 	}
 
@@ -241,6 +241,7 @@ public class Scratch extends Sprite {
 		addExternalCallback('ASloadExtension', extensionManager.loadRawExtension);
 		addExternalCallback('ASextensionCallDone', extensionManager.callCompleted);
 		addExternalCallback('ASextensionReporterDone', extensionManager.reporterCompleted);
+
 		addExternalCallback('AScreateNewProject', createNewProjectScratchX);
 		addExternalCallback('ASopenProjectFromData', openProjectFromData);
 
@@ -253,6 +254,34 @@ public class Scratch extends Sprite {
 		addExternalCallback('ASgetAllVars', getAllVarsCallback);
 		addExternalCallback('ASsetVarValue', setVarValueCallback);
 		addExternalCallback('AScreateVariable', createVariableCallback);
+
+		addExternalCallback("AScallFlashFunction", jsCallFlashFunction);
+		addExternalCallback("ASgetFlashFunctions", jsGetFlashFunctions);
+	}
+
+	private function jsCallFlashFunction(functionName:String, args:Array = null):* {
+		if (this.hasOwnProperty(functionName) && this[functionName] is Function) {
+			try {
+				return (this[functionName] as Function).apply(this, args || []);
+			}
+			catch (e:Error) {
+				logException(e);
+				return "Error executing function: " + e.message;
+			}
+		}
+		return "Function not found: " + functionName;
+	}
+
+	private function jsGetFlashFunctions():Array {
+		var description:XML = describeType(this);
+		var methodList:XMLList = description.method;
+		var functionNames:Array = [];
+
+		for (var i:int = 0; i < methodList.length(); i++) {
+			functionNames.push(String(methodList[i].@name));
+		}
+		
+		return functionNames.sort();
 	}
 
 	private function getAllVarsCallback():Array {
