@@ -1143,7 +1143,10 @@ public class Scratch extends Sprite {
 	}
 
 	protected function addFileMenuItems(b:*, m:Menu):void {
-		m.addItem('Download project from scratch.mit.edu', dlFrom2);
+		if (ExternalInterface.available && ExternalInterface.call("function(){return !!window.showProjectPicker;}"))
+		{
+			m.addItem('Download project from scratch.mit.edu', dlFrom2);
+		}
 		m.addLine();
 		m.addItem('Load Project', runtime.selectProjectFile);
 		m.addItem('Save Project', exportProjectToFile);
